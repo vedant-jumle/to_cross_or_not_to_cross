@@ -109,12 +109,19 @@ PIE_dataset/
 - Test: 40%
 - Validation: 10%
 
-### 2.3 Recommended Choice
-**Start with JAAD** because:
-- Smaller, easier to work with
-- Simpler feature set
-- Behavioral annotations are sufficient
-- PIE can be added later if time permits
+### 2.3 Dataset Strategy
+**Primary: PIE** because:
+- Richer feature set (OBD vehicle speed, GPS, traffic light state + position)
+- Crossing intention probability from human experiments (continuous labels)
+- Larger video coverage (6 hours, 300K+ frames)
+- Real sensor data removes need for proxy features (e.g., vehicle speed estimation)
+
+**Secondary: JAAD** (if time permits)
+- Can serve as cross-dataset validation
+- Useful for generalization analysis
+- Smaller and faster to iterate on
+
+**Plan:** Start with PIE, build the full pipeline there. Add JAAD only if time allows for cross-dataset experiments.
 
 ---
 
