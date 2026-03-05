@@ -37,9 +37,10 @@ echo.
 :: Step 2: Create conda environment
 :: -----------------------------------------------
 echo [2/5] Creating conda environment...
-call conda env list | findstr "cv_project" >nul 2>&1
+call conda activate cv_project >nul 2>&1
 if not errorlevel 1 (
     echo [SKIP] Environment 'cv_project' already exists.
+    call conda deactivate >nul 2>&1
 ) else (
     call conda env create -f environment.yml
     if errorlevel 1 (
