@@ -1,68 +1,80 @@
 # Scripts
 
-All setup scripts for Windows are in `scripts/windows/`.
-
 > Run all scripts from the **project root directory**, not from inside `scripts/`.
 
 ---
 
-## scripts/windows/setup.bat
+## Windows — `scripts/windows/`
 
-Sets up the full project environment in one go:
-- Creates the `cv_project` conda environment from `environment.yml`
-- Clones the PIE GitHub repo, extracts annotations into `data/PIE_dataset/`
-- Copies PIE interface utilities into `src/pie_interface/`
-- Deletes the temporary PIE repo clone
+### setup.bat
+Sets up the full project environment:
+- Creates the `cv_project` conda environment
+- Clones PIE repo, extracts annotations into `data/PIE_dataset/`
+- Copies PIE utilities into `src/pie_interface/`
+- Deletes the temporary clone
 
-**Usage:**
 ```bat
 scripts\windows\setup.bat
 ```
 
-Run this once after cloning the repo.
-
----
-
-## scripts/windows/download_clips.bat
-
+### download_clips.bat
 Downloads PIE video clips from Google Drive and extracts them into `data/PIE_dataset/clips/`.
 
-Requires the `cv_project` conda environment to be active (uses `gdown`).
-
-**Usage:**
-
-Download a specific set:
 ```bat
+:: Activate env first
 conda activate cv_project
-scripts\windows\download_clips.bat 1    :: downloads set01
-scripts\windows\download_clips.bat 3    :: downloads set03
-```
 
-Download all sets:
-```bat
-conda activate cv_project
+:: Download a specific set (1-6)
+scripts\windows\download_clips.bat 1
+
+:: Download all sets
 scripts\windows\download_clips.bat all
-```
 
-Run without arguments for an interactive prompt:
-```bat
-conda activate cv_project
+:: Interactive prompt
 scripts\windows\download_clips.bat
 ```
 
-Already-downloaded zips are skipped automatically.
+---
+
+## Linux — `scripts/linux/`
+
+### setup.sh
+Same as the Windows version, for Linux/WSL.
+
+```bash
+bash scripts/linux/setup.sh
+```
+
+### download_clips.sh
+Same as the Windows version, for Linux/WSL.
+
+```bash
+# Activate env first
+conda activate cv_project
+
+# Download a specific set (1-6)
+bash scripts/linux/download_clips.sh 1
+
+# Download all sets
+bash scripts/linux/download_clips.sh all
+
+# Interactive prompt
+bash scripts/linux/download_clips.sh
+```
 
 ---
 
 ## Recommended order
 
-```bat
-:: 1. Set up environment and annotations
-scripts\windows\setup.bat
+```bash
+# 1. Set up environment and annotations
+bash scripts/linux/setup.sh          # Linux
+# scripts\windows\setup.bat          # Windows
 
-:: 2. Activate env
+# 2. Activate env
 conda activate cv_project
 
-:: 3. Download video clips
-scripts\windows\download_clips.bat all
+# 3. Download video clips
+bash scripts/linux/download_clips.sh all       # Linux
+# scripts\windows\download_clips.bat all       # Windows
 ```
