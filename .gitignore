@@ -207,7 +207,7 @@ marimo/_lsp/
 __marimo__/
 
 PIE/
-data/
+/data/
 dataset/
 Data/
 # Project specific
