@@ -34,7 +34,7 @@ def _is_valid_features(features: Dict[str, Any]) -> bool:
         if features[key] not in (0, 1):
             return False
 
-    if float(features["traffic_light"]) not in {0.0, 1.0, 2.0, 3.0}:
+    if int(features["traffic_light"]) not in {0, 1, 2, 3}:
         return False
 
     if float(features["vehicle_speed_kmh"]) < 0:
@@ -129,7 +129,7 @@ def extract_pie_features(
                     look = int(ped_data["behavior"]["look"][idx])      # 0 not-looking, 1 looking
 
                     scene = scene_index.get(frame_id, {"traffic_light": 0, "crosswalk": 0})
-                    traffic_light = float(scene["traffic_light"])
+                    traffic_light = int(scene["traffic_light"])
                     crosswalk = int(scene["crosswalk"])
 
                     signalized_bin = int(int(attrs["signalized"]) > 0)  # 0=n/a, 1=C, 2=S, 3=CS
@@ -164,6 +164,7 @@ def extract_pie_features(
                         "pedestrian_id": ped_id,
                         "frame_id": frame_id,
                         "features": features,
+                        "label_crossing": int(crossing_track_label > 0),
                         "label_crossing_track": int(crossing_track_label > 0),
                         "label_crossing_frame": int(ped_data["behavior"]["cross"][idx] == 1),
                         "intention_prob": float(attrs.get("intention_prob", -1.0)),
