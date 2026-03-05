@@ -42,14 +42,17 @@ if errorlevel 1 (
     echo [ERROR] Failed to download Miniconda. Check your internet connection.
     exit /b 1
 )
-start /wait "" miniconda_installer.exe /S /D=%USERPROFILE%\Miniconda3
+start /wait "" miniconda_installer.exe /S /AddToPath=1 /RegisterPython=1 /D=%USERPROFILE%\Miniconda3
 del miniconda_installer.exe
 set PATH=%USERPROFILE%\Miniconda3\Scripts;%USERPROFILE%\Miniconda3;%PATH%
-call %USERPROFILE%\Miniconda3\Scripts\activate.bat
-echo [INFO] Miniconda installed. You may need to restart your terminal after setup.
-echo Done.
+call %USERPROFILE%\Miniconda3\Scripts\conda.exe init cmd.exe
+call %USERPROFILE%\Miniconda3\Scripts\conda.exe init powershell
 echo.
-goto :create_env
+echo [INFO] Miniconda installed successfully.
+echo [INFO] Please close this terminal, open a new one, and run this script again.
+echo.
+pause
+exit /b 0
 
 :: -----------------------------------------------
 :: Step 2: Create conda environment
