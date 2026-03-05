@@ -13,29 +13,48 @@ if not exist "environment.yml" (
 )
 
 :: -----------------------------------------------
-:: Step 1: Install Miniconda if not found
+:: Ask upfront: install conda?
 :: -----------------------------------------------
-echo [1/5] Checking for conda...
 where conda >nul 2>&1
 if errorlevel 1 (
-    echo [INFO] conda not found. Downloading Miniconda...
-    curl -o miniconda_installer.exe https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe
-    echo [INFO] Installing Miniconda silently...
-    start /wait "" miniconda_installer.exe /S /D=%USERPROFILE%\Miniconda3
-    del miniconda_installer.exe
-    :: Add conda to PATH for this session
-    set PATH=%USERPROFILE%\Miniconda3\Scripts;%USERPROFILE%\Miniconda3;%PATH%
-    call %USERPROFILE%\Miniconda3\Scripts\activate.bat
-    echo [INFO] Miniconda installed. You may need to restart your terminal after setup.
+    echo conda was not found on this system.
+    set /p INSTALL_CONDA="Do you want to install Miniconda? [y/n]: "
+    if /i "!INSTALL_CONDA!"=="y" (
+        goto :install_conda
+    ) else (
+        echo [ERROR] conda is required. Please install it manually and re-run this script.
+        echo Download: https://docs.conda.io/en/latest/miniconda.html
+        exit /b 1
+    )
 ) else (
     echo [OK] conda found.
+    goto :create_env
 )
+
+:: -----------------------------------------------
+:: Step 1a: Install Miniconda
+:: -----------------------------------------------
+:install_conda
+echo.
+echo [1/5] Installing Miniconda...
+curl -o miniconda_installer.exe https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe
+if errorlevel 1 (
+    echo [ERROR] Failed to download Miniconda. Check your internet connection.
+    exit /b 1
+)
+start /wait "" miniconda_installer.exe /S /D=%USERPROFILE%\Miniconda3
+del miniconda_installer.exe
+set PATH=%USERPROFILE%\Miniconda3\Scripts;%USERPROFILE%\Miniconda3;%PATH%
+call %USERPROFILE%\Miniconda3\Scripts\activate.bat
+echo [INFO] Miniconda installed. You may need to restart your terminal after setup.
 echo Done.
 echo.
+goto :create_env
 
 :: -----------------------------------------------
 :: Step 2: Create conda environment
 :: -----------------------------------------------
+:create_env
 echo [2/5] Creating conda environment...
 call conda activate cv_project >nul 2>&1
 if not errorlevel 1 (
