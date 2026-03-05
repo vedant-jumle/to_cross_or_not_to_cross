@@ -216,3 +216,4 @@ PIE_dataset/
 *.pth
 *.pt
 data_cache/
+raw_data/
