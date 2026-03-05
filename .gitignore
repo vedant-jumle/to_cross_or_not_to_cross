@@ -210,3 +210,9 @@ PIE/
 data/
 dataset/
 Data/
+# Project specific
+PIE_dataset/
+*.pkl
+*.pth
+*.pt
+data_cache/
