@@ -209,7 +209,6 @@ __marimo__/
 PIE/
 /data/
 dataset/
-Data/
 # Project specific
 PIE_dataset/
 *.pkl
