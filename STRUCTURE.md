@@ -5,47 +5,50 @@ Everyone works in their designated folder. Do not modify files outside your fold
 ```
 to_cross_or_not_to_cross/
 │
-├── src/                           # All source code lives here
-│   ├── data/                      # Person 1 & 2: Data loading and feature extraction
-│   │   ├── pie_loader.py          # Person 1: PIE() wrapper, generate_database()
-│   │   ├── feature_extractor.py   # Person 2: Extract feature vectors from annotations
-│   │   └── dataloader.py          # Person 3: Dataset class, splits, labels
+├── src/                               # All source code
+│   ├── pie_interface/                 # PIE data interface (do not modify)
+│   │   ├── pie_data.py
+│   │   ├── data_gen_utils.py
+│   │   └── utils.py
 │   │
-│   ├── models/                    # Person 3: Model definition and training
-│   │   ├── baseline.py            # MLP / LSTM classifier
-│   │   └── train.py               # Training script
+│   ├── data/                          # Person 1 & 2
+│   │   ├── pie_loader.py              # Person 1: PIE() wrapper, generate_database()
+│   │   ├── feature_extractor.py       # Person 2: Extract feature vectors
+│   │   └── dataloader.py              # Person 3: Dataset class, splits, labels
 │   │
-│   ├── counterfactuals/           # (Week 3+) Counterfactual generation
-│   │   ├── perturbations.py       # Feature perturbation logic
-│   │   ├── search.py              # Brute force + greedy search
-│   │   └── generator.py           # Main interface
+│   ├── models/                        # Person 3
+│   │   ├── baseline.py                # MLP / LSTM classifier
+│   │   └── train.py                   # Training script
 │   │
-│   ├── evaluation/                # (Week 7) Metrics and analysis
-│   │   ├── metrics.py             # Flip rate, sparsity, consistency
-│   │   └── feature_importance.py  # Ranking features by flip frequency
+│   ├── counterfactuals/               # Week 3+
+│   │   ├── perturbations.py
+│   │   ├── search.py
+│   │   └── generator.py
 │   │
-│   └── experiments/               # (Week 3+) Experiment scripts
+│   ├── evaluation/                    # Week 7
+│   │   ├── metrics.py
+│   │   └── feature_importance.py
+│   │
+│   └── experiments/                   # Week 3+
 │       ├── exp1_single_feature.py
 │       └── exp2_minimal_cf.py
 │
-├── notebooks/                     # Person 4: EDA and exploration
-│   └── 01_data_exploration.ipynb  # Person 4: Distributions, sanity checks, viz
+├── notebooks/                         # Person 4
+│   └── 01_data_exploration.ipynb
 │
 ├── results/
-│   ├── figures/                   # Saved plots (not committed to git)
-│   └── tables/                    # Saved CSVs/results (not committed to git)
+│   ├── figures/                       # Not committed to git
+│   └── tables/                        # Not committed to git
 │
-├── PIE/                           # PIE GitHub repo (do not modify)
-├── PIE_dataset/                   # Local dataset root (not committed to git)
-│   ├── annotations/      -> PIE/annotations/annotations
-│   ├── annotations_attributes/ -> PIE/annotations/annotations_attributes
-│   ├── annotations_vehicle/ -> PIE/annotations/annotations_vehicle
-│   └── PIE_clips/                 # Symlinks to raw_data/set01-06
-│
-├── raw_data/                      # Raw zip files and extracted videos (not committed to git)
-│   ├── set01.zip
-│   ├── set01/
-│   └── ...
+├── data/                              # Not committed to git (gitignored)
+│   └── PIE_dataset/
+│       ├── annotations/
+│       ├── annotations_attributes/
+│       ├── annotations_vehicle/
+│       └── clips/
+│           ├── set01/
+│           ├── set01.zip
+│           └── ...
 │
 ├── environment.yml
 ├── project_doc.md
@@ -56,19 +59,19 @@ to_cross_or_not_to_cross/
 ## Rules
 
 1. **Each person owns their folder** — coordinate before touching someone else's files
-2. **No large files in git** — dataset, pkl cache, model weights are all gitignored
-3. **Notebooks go in `notebooks/`** — named with a number prefix (`01_`, `02_`, etc.)
-4. **Import paths** — always import from project root, e.g.:
+2. **No large files in git** — `data/` is gitignored; dataset, pkl cache, model weights stay local
+3. **Notebooks go in `notebooks/`** — named with number prefix (`01_`, `02_`, etc.)
+4. **Import paths** — always import from project root:
    ```python
-   from src.data.pie_loader import PIELoader
+   from src.pie_interface.pie_data import PIE
    from src.data.feature_extractor import FeatureExtractor
    ```
-5. **PIE interface** — use `PIE/utilities/pie_data.py` directly, do not copy or modify it
+5. **PIE interface** — use `src/pie_interface/pie_data.py`, do not modify it
 
 ## Who owns what
 
-| Person | File/Folder | Deliverable |
-|--------|-------------|-------------|
+| Person | File | Deliverable |
+|--------|------|-------------|
 | 1 | `src/data/pie_loader.py` | Working PIE() instance + pkl cache |
 | 2 | `src/data/feature_extractor.py` | Feature vectors per sample |
 | 3 | `src/data/dataloader.py`, `src/models/` | Dataset splits + baseline model |

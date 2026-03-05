@@ -17,13 +17,15 @@ conda activate cv_project
 ```
 
 ### 3. Set up the dataset
-Create the `raw_data/` directory and place the PIE dataset zip files in it:
+
+Create the dataset directory:
 ```bash
-mkdir Data
+mkdir -p data/PIE_dataset/clips
 ```
 
+Download the PIE dataset zip files and place them in `data/PIE_dataset/clips/`:
 ```
-raw_data/
+data/PIE_dataset/clips/
 ├── set01.zip
 ├── set02.zip
 ├── set03.zip
@@ -34,34 +36,56 @@ raw_data/
 
 Extract each set:
 ```bash
-cd Data
+cd data/PIE_dataset/clips
 unzip set01.zip
 unzip set02.zip
-# ... etc
+unzip set03.zip
+unzip set04.zip
+unzip set05.zip
+unzip set06.zip
 ```
 
-### 4. Set up PIE_dataset directory
-```bash
-mkdir -p PIE_dataset/PIE_clips
+### 4. Set up annotations
 
-# Symlink annotations
-ln -s ../PIE/annotations/annotations ./PIE_dataset/annotations
-ln -s ../PIE/annotations/annotations_attributes ./PIE_dataset/annotations_attributes
-ln -s ../PIE/annotations/annotations_vehicle ./PIE_dataset/annotations_vehicle
+Download the PIE annotations and extract them into `data/PIE_dataset/`:
+- `annotations/` — per-frame bounding boxes and behavior labels
+- `annotations_attributes/` — pedestrian attributes (age, gender, group size, etc.)
+- `annotations_vehicle/` — OBD sensor data (vehicle speed, GPS)
 
-# Symlink video sets
-ln -s ../../raw_data/set01 ./PIE_dataset/PIE_clips/set01
-ln -s ../../raw_data/set02 ./PIE_dataset/PIE_clips/set02
-# ... etc for each set you have downloaded
+Final structure should look like:
+```
+data/PIE_dataset/
+├── annotations/
+│   ├── set01/
+│   │   ├── video_0001_annt.xml
+│   │   └── ...
+│   └── ...
+├── annotations_attributes/
+│   ├── set01/
+│   │   ├── video_0001_attributes.xml
+│   │   └── ...
+│   └── ...
+├── annotations_vehicle/
+│   ├── set01/
+│   │   ├── video_0001_obd.xml
+│   │   └── ...
+│   └── ...
+└── clips/
+    ├── set01/
+    │   ├── video_0001.mp4
+    │   └── ...
+    └── ...
 ```
 
-### 5. Extract PIE annotations
-```bash
-cd PIE/annotations
-unzip annotations.zip
-unzip annotations_attributes.zip
-unzip annotations_vehicle.zip
-```
+> **Note:** The `data/` directory is gitignored. Everyone sets it up locally.
 
-## Structure
-See [STRUCTURE.md](STRUCTURE.md) for the full breakdown of folders and team ownership.
+## Project Structure
+See [STRUCTURE.md](STRUCTURE.md) for the full breakdown of source folders and team ownership.
+
+## Overview
+
+This project builds a counterfactual explanation framework on top of a pedestrian crossing prediction model trained on the [PIE dataset](https://data.nvision2.eecs.yorku.ca/PIE_dataset/). Given a model prediction ("will cross" / "won't cross"), we generate minimal feature perturbations that flip the prediction — answering questions like:
+
+> "The pedestrian would NOT cross if the traffic light were red."
+
+See [project_doc.md](project_doc.md) for the full project specification.
