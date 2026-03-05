@@ -11,7 +11,7 @@ to_cross_or_not_to_cross/
 │   │   ├── data_gen_utils.py
 │   │   └── utils.py
 │   │
-│   ├── data/                          # Person 1 & 2
+│   ├── data_pipeline/                 # Person 1 & 2
 │   │   ├── pie_loader.py              # Person 1: PIE() wrapper, generate_database()
 │   │   ├── feature_extractor.py       # Person 2: Extract feature vectors
 │   │   └── dataloader.py              # Person 3: Dataset class, splits, labels
@@ -64,7 +64,7 @@ to_cross_or_not_to_cross/
 4. **Import paths** — always import from project root:
    ```python
    from src.pie_interface.pie_data import PIE
-   from src.data.feature_extractor import FeatureExtractor
+   from src.data_pipeline.feature_extractor import FeatureExtractor
    ```
 5. **PIE interface** — use `src/pie_interface/pie_data.py`, do not modify it
 
@@ -72,7 +72,7 @@ to_cross_or_not_to_cross/
 
 | Person | File | Deliverable |
 |--------|------|-------------|
-| 1 | `src/data/pie_loader.py` | Working PIE() instance + pkl cache |
-| 2 | `src/data/feature_extractor.py` | Feature vectors per sample |
-| 3 | `src/data/dataloader.py`, `src/models/` | Dataset splits + baseline model |
+| 1 | `src/data_pipeline/pie_loader.py` | Working PIE() instance + pkl cache |
+| 2 | `src/data_pipeline/feature_extractor.py` | Feature vectors per sample |
+| 3 | `src/data_pipeline/dataloader.py`, `src/models/` | Dataset splits + baseline model |
 | 4 | `notebooks/01_data_exploration.ipynb` | EDA notebook with findings |
