@@ -86,9 +86,7 @@ class PIEDataset(Dataset):
                 continue
             official = split_from_set_id(set_id)
             rec["split_official"] = official
-            if enforce_official_split:
-                pass
-            if official != split:
+            if enforce_official_split and official != split:
                 continue
             
             # Filter out any missing labels
