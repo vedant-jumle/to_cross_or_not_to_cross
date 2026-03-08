@@ -60,7 +60,7 @@ class PIE(object):
         self._annotation_attributes_path = join(self._pie_path, 'annotations_attributes')
         self._annotation_vehicle_path = join(self._pie_path, 'annotations_vehicle')
 
-        self._clips_path = join(self._pie_path, 'clips')
+        self._clips_path = join(self._pie_path, 'PIE_clips')
         self._images_path = join(self._pie_path, 'images')
 
     # Path generators

@@ -40,13 +40,26 @@ else
 fi
 
 # -----------------------------------------------
-# Step 2: Create conda environment
+# Step 2: Create or use conda environment
 # -----------------------------------------------
-echo "[2/5] Creating conda environment..."
-if conda env list | grep -q "cv_project"; then
-    echo "[SKIP] Environment 'cv_project' already exists."
+echo "[2/5] Setting up conda environment..."
+read -rp "Create a new conda environment, or use an existing one? [new/existing]: " ENV_CHOICE
+if [[ "$ENV_CHOICE" =~ ^[Ee] ]]; then
+    read -rp "Enter the name of the existing conda environment to use: " ENV_NAME
+    if conda env list | grep -q "^${ENV_NAME} "; then
+        echo "[OK] Will use existing environment '${ENV_NAME}'."
+    else
+        echo "[ERROR] Environment '${ENV_NAME}' not found. Run 'conda env list' to see available environments."
+        exit 1
+    fi
 else
-    conda env create -f environment.yml
+    ENV_NAME="cv_project"
+    if conda env list | grep -q "^cv_project "; then
+        echo "[SKIP] Environment 'cv_project' already exists. Using it."
+    else
+        conda env create -f environment.yml
+        echo "[OK] Environment 'cv_project' created."
+    fi
 fi
 echo "Done."
 echo
@@ -102,7 +115,7 @@ echo "Next steps:"
 echo "  1. If conda was just installed, restart your terminal or run:"
 echo "       source ~/.bashrc"
 echo "  2. Activate the environment:"
-echo "       conda activate cv_project"
+echo "       conda activate ${ENV_NAME}"
 echo "  3. Download video clips:"
 echo "       bash scripts/linux/download_clips.sh all"
 echo
