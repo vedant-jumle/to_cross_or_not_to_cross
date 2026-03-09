@@ -152,3 +152,22 @@ def val_epoch(model, loader, criterion, device):
             
         
     return avg_loss, y_prob, y_true
+
+def save_checkpoint(checkpoint_location: Path, epoch: int, model, best_val_f1: float, cfg ):
+    checkpoint = {"epoch": epoch, "model_state_dict": model.state_dict(), "best_val_f1": best_val_f1, "config": cfg}
+    
+    torch.save(checkpoint, checkpoint_location)
+    
+    
+def save_log_csv(log_rows, csv_location: Path):
+    csv_location.parent.mkdir(parents=True, exist_ok=True)
+    
+    fieldnames = ["epoch", "train_loss", "val_loss", "val_f1", "val_auc_roc", "val_precision", "val_recall",]
+    
+    with open(csv_location, "w", newline="", encoding="utf-8") as file:
+        writer = csv.DictReader(file, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.write_rows(log_rows)
+        
+
+    
