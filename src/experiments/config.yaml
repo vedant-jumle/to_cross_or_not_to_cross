@@ -10,7 +10,7 @@ model:
   use_batchnorm: true
 
 training:
-  epochs: 50
+  epochs: 10
   batch_size: 64
   lr: 1.0e-3
   weight_decay: 1.0e-4
