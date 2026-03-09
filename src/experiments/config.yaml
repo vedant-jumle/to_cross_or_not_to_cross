@@ -1,5 +1,6 @@
 data:
-  jsonl_path: processed/features_pie_train.jsonl
+  jsonl_path_train: processed/features_pie_train.jsonl
+  jsonl_path_val: processed/features_pie_val.jsonl
   label_field: label_crossing
 
 model:

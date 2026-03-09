@@ -74,12 +74,12 @@ def build_loaders(cfg):
     train_cfg = cfg["training"]
     
     ds_train = PIEDataset(
-        jsonl_path=data_cfg["jsonl_path"],
+        jsonl_path=data_cfg["jsonl_path_train"],
         split="train",
         label_field=data_cfg["label_field"],
     ) 
     ds_val = PIEDataset(
-        jsonl_path=data_cfg["jsonl_path"],
+        jsonl_path=data_cfg["jsonl_path_val"],
         split="val",
         label_field=data_cfg["label_field"],
     ) 
@@ -88,14 +88,14 @@ def build_loaders(cfg):
         ds_train, 
         batch_size=train_cfg["batch_size"], 
         shuffle=not train_cfg.get("use_weighted_sampler", False), 
-        num_workers=train_cfg["num_workers", 0]
-    )
+        num_workers=train_cfg.get("num_workers", 0)    
+        )
     
     val_loader = DataLoader(
         ds_val, 
         batch_size=train_cfg["batch_size"], 
         shuffle=not train_cfg.get("use_weighted_sampler", False), 
-        num_workers=train_cfg["num_workers", 0]
+        num_workers=train_cfg.get("num_workers", 0)
     )
     
     return ds_train, ds_val, train_loader, val_loader
@@ -129,8 +129,11 @@ def val_epoch(model, loader, criterion, device):
     all_probs = []
     all_labels = []
     
+    print("val loader type:", type(loader))
+    print("val loader len:", len(loader))
+    
     with torch.no_grad():
-        for batch in loader:
+        for i, batch in enumerate(loader):
             x = batch["x"].to(device)
             y = batch["y"].to(device)
             
@@ -144,8 +147,10 @@ def val_epoch(model, loader, criterion, device):
             total_samples += batch_size
             
             all_probs.append(probs.cpu().numpy())
-            all_probs.append(y.cpu().numpy())
+            all_labels.append(y.cpu().numpy())
     
+    print("num collected val batches:", len(all_labels))
+
     avg_loss = running_loss / max(total_samples, 1) 
     y_prob = np.concatenate(all_probs, axis=0)
     y_true = np.concatenate(all_labels, axis=0).astype(int)
@@ -165,9 +170,9 @@ def save_log_csv(log_rows, csv_location: Path):
     fieldnames = ["epoch", "train_loss", "val_loss", "val_f1", "val_auc_roc", "val_precision", "val_recall",]
     
     with open(csv_location, "w", newline="", encoding="utf-8") as file:
-        writer = csv.DictReader(file, fieldnames=fieldnames)
+        writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writeheader()
-        writer.write_rows(log_rows)
+        writer.writerows(log_rows)
         
 def main():
     args = parse_args()
@@ -186,6 +191,15 @@ def main():
     device = torch.device(train_cfg.get("device", "cpu"))
     
     ds_train, ds_val, train_loader, val_loader = build_loaders(cfg)
+    
+    print(f"Train samples: {len(ds_train)}")
+    print(f"Val samples: {len(ds_val)}")
+    
+    print("ds_train len:", len(ds_train))
+    print("ds_val len:", len(ds_val))
+    print("train_loader len:", len(train_loader))
+    print("val_loader len:", len(val_loader))
+    print("val_loader:", val_loader)
     
     train_stats = ds_train.class_stats()
     pos_weight_value = train_stats["pos_weight"]
