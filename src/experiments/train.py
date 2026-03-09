@@ -8,11 +8,11 @@ import torch.nn as nn
 import yaml
 from torch.utils.data import DataLoader
 
-from src.data_pipeline.dataloader import PIEDataset
+from ..data_pipeline.dataloader import PIEDataset
 
 # Try to get models from person 2
 try:
-    from src.models.mlp import MLP
+    from ..models.mlp import MLP
 except ImportError:
     class MLP(nn.Module):
         def __init__(self, input_dim, hidden_dims, dropout, use_batchnorm):
@@ -36,7 +36,7 @@ except ImportError:
     
 # Try to get metrics from person 1    
 try:
-    from src.evaluation.metrics import compute_metrics
+    from ..evaluation.metrics import compute_metrics
 except ImportError:
     from sklearn.metrics import (
         confusion_matrix,
@@ -71,7 +71,7 @@ def load_config_file(config_path: str):
     
 def build_loaders(cfg):
     data_cfg = cfg["data"]
-    train_cfg = cfg["train"]
+    train_cfg = cfg["training"]
     
     ds_train = PIEDataset(
         jsonl_path=data_cfg["jsonl_path"],
@@ -273,3 +273,6 @@ def main():
 if __name__ == "__main__":
     main()
     
+# install these: pip install torch numpy scikit-learn pyyaml
+# to run: python -m train --config config.yaml 
+# note that this works when ur in the experiments directory!!! change it if you're in the project root!
