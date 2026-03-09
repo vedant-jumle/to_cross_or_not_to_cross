@@ -1,0 +1,25 @@
+data:
+  jsonl_path: processed/features_pie_train.jsonl
+  label_field: label_crossing
+
+model:
+  type: mlp
+  input_dim: 9
+  hidden_dims: [64, 32]
+  dropout: 0.3
+  use_batchnorm: true
+
+training:
+  epochs: 50
+  batch_size: 64
+  lr: 1.0e-3
+  weight_decay: 1.0e-4
+  num_workers: 0
+  use_weighted_sampler: false
+  early_stopping_patience: 10
+  device: cpu
+
+output:
+  checkpoint_dir: checkpoints
+  best_model_name: best_mlp.pt
+  log_csv_location: checkpoints/train_log.csv
