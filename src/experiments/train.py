@@ -169,5 +169,107 @@ def save_log_csv(log_rows, csv_location: Path):
         writer.writeheader()
         writer.write_rows(log_rows)
         
+def main():
+    args = parse_args()
+    cfg = load_config_file(args.config)
+    
+    output_cfg = cfg["output"]
+    model_cfg = cfg["model"]
+    train_cfg =cfg["training"]
+    
+    checkpoint_dir = Path(output_cfg["checkpoint_dir"])
+    checkpoint_dir.mkdir(parents=True, exist_ok=True)
+    checkpoint_location = checkpoint_dir / output_cfg["best_model_name"]
+    
+    log_csv_location = Path(output_cfg["log_csv_location"])
+    
+    device = torch.device(train_cfg.get("device", "cpu"))
+    
+    ds_train, ds_val, train_loader, val_loader = build_loaders(cfg)
+    
+    train_stats = ds_train.class_stats()
+    pos_weight_value = train_stats["pos_weight"]
+    if pos_weight_value is None:
+        raise ValueError("Could not compute pos_weight from training set.")
 
+    model = MLP(
+        input_dim=model_cfg["input_dim"],
+        hidden_dims=model_cfg["hidden_dims"],
+        dropout=model_cfg["dropout"],
+        use_batchnorm=model_cfg["use_batchnorm"],
+    ).to(device)
+
+    pos_weight = torch.tensor([pos_weight_value], dtype=torch.float32, device=device)
+    criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
+
+    optimizer = torch.optim.Adam(
+        model.parameters(),
+        lr=float(train_cfg["lr"]),
+        weight_decay=float(train_cfg["weight_decay"]),
+    )
+
+    best_val_f1 = -1.0
+    patience_counter = 0
+    patience = train_cfg["early_stopping_patience"]
+
+    log_rows = []
+
+    print(f"Train samples: {len(ds_train)}")
+    print(f"Val samples:   {len(ds_val)}")
+    print(f"Train class stats: {train_stats}")
+    print(f"Using device: {device}")
+    print("-" * 80)
+
+    for epoch in range(1, train_cfg["epochs"] + 1):
+        train_loss = train_epoch(model, train_loader, criterion, optimizer, device)
+        val_loss, val_probs, val_labels = val_epoch(model, val_loader, criterion, device)
+
+        metrics = compute_metrics(val_labels, val_probs)
+        val_f1 = float(metrics.get("f1", 0.0))
+        val_auc = float(metrics.get("auc_roc", 0.0))
+        val_precision = float(metrics.get("precision", 0.0))
+        val_recall = float(metrics.get("recall", 0.0))
+
+        log_rows.append(
+            {
+                "epoch": epoch,
+                "train_loss": train_loss,
+                "val_loss": val_loss,
+                "val_f1": val_f1,
+                "val_auc_roc": val_auc,
+                "val_precision": val_precision,
+                "val_recall": val_recall,
+            }
+        )
+
+        print(
+            f"Epoch {epoch:03d} | "
+            f"train_loss={train_loss:.4f} | "
+            f"val_loss={val_loss:.4f} | "
+            f"val_f1={val_f1:.4f} | "
+            f"val_auc_roc={val_auc:.4f}"
+        )
+
+        if val_f1 > best_val_f1:
+            best_val_f1 = val_f1
+            patience_counter = 0
+            save_checkpoint(checkpoint_location, epoch, model, best_val_f1, cfg)
+            print(f"  -> Saved new best checkpoint to {checkpoint_location}")
+        else:
+            patience_counter += 1
+
+        if patience_counter >= patience:
+            print(f"Early stopping triggered at epoch {epoch}.")
+            break
+
+    save_log_csv(log_rows, log_csv_location)
+    print("-" * 80)
+    print(f"Best val F1: {best_val_f1:.4f}")
+    print(f"Saved training log to: {log_csv_location}")
+    print(f"Best checkpoint path: {checkpoint_location}")
+
+
+    
+if __name__ == "__main__":
+    main()
     
