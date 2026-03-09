@@ -59,4 +59,96 @@ except ImportError:
             "confusion_matrix": confusion_matrix(y_true, y_pred).tolist(),
         }
     
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--config", type=str, required=True)
     
+    return parser.parse_args()
+
+def load_config_file(config_path: str):
+    with open(config_path, 'r', encoding="utf-8") as file:
+        return yaml.safe_load(file)
+    
+def build_loaders(cfg):
+    data_cfg = cfg["data"]
+    train_cfg = cfg["train"]
+    
+    ds_train = PIEDataset(
+        jsonl_path=data_cfg["jsonl_path"],
+        split="train",
+        label_field=data_cfg["label_field"],
+    ) 
+    ds_val = PIEDataset(
+        jsonl_path=data_cfg["jsonl_path"],
+        split="val",
+        label_field=data_cfg["label_field"],
+    ) 
+    
+    train_loader = DataLoader(
+        ds_train, 
+        batch_size=train_cfg["batch_size"], 
+        shuffle=not train_cfg.get("use_weighted_sampler", False), 
+        num_workers=train_cfg["num_workers", 0]
+    )
+    
+    val_loader = DataLoader(
+        ds_val, 
+        batch_size=train_cfg["batch_size"], 
+        shuffle=not train_cfg.get("use_weighted_sampler", False), 
+        num_workers=train_cfg["num_workers", 0]
+    )
+    
+    return ds_train, ds_val, train_loader, val_loader
+
+def train_epoch(model, loader, criterion, optimizer, device):
+    model.train()
+    running_loss = 0.0
+    total_samples = 0
+    
+    for batch in loader:
+        x = batch["x"].to(device)
+        y = batch["y"].to(device)
+        
+        optimizer.zero_grad()
+        logits = model(x)
+        loss = criterion(logits, y)
+        loss.backward()
+        optimizer.step()
+        
+        batch_size = x.size(0)
+        running_loss += loss.item() * batch_size
+        total_samples += batch_size
+        
+    return running_loss / max(total_samples, 1)
+
+def val_epoch(model, loader, criterion, device):
+    model.eval()
+    running_loss = 0.0
+    total_samples = 0
+    
+    all_probs = []
+    all_labels = []
+    
+    with torch.no_grad():
+        for batch in loader:
+            x = batch["x"].to(device)
+            y = batch["y"].to(device)
+            
+            logits = model(x)
+            loss = criterion(logits, y)
+            probs = torch.sigmoid(logits)
+            
+            
+            batch_size = x.size(0)
+            running_loss += loss.item() * batch_size
+            total_samples += batch_size
+            
+            all_probs.append(probs.cpu().numpy())
+            all_probs.append(y.cpu().numpy())
+    
+    avg_loss = running_loss / max(total_samples, 1) 
+    y_prob = np.concatenate(all_probs, axis=0)
+    y_true = np.concatenate(all_labels, axis=0).astype(int)
+            
+        
+    return avg_loss, y_prob, y_true
