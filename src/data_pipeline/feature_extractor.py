@@ -220,14 +220,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--output",
         type=Path,
-        default=Path("processed/features_pie_train.jsonl"),
-        help="Output JSONL path",
+        default=None,
+        help="Output JSONL path (default: processed/features_pie_<split>.jsonl)",
     )
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
+    output = args.output or Path(f"processed/features_pie_{args.split}.jsonl")
     _, db = load_pie(data_path=args.pie_root, regen=False)
     samples = extract_pie_features(
         db=db,
@@ -235,8 +236,8 @@ def main() -> None:
         anchor=args.anchor,
         include_irrelevant=args.include_irrelevant,
     )
-    write_jsonl(samples, args.output)
-    print(f"[write] samples={len(samples)} output={args.output}")
+    write_jsonl(samples, output)
+    print(f"[write] samples={len(samples)} output={output}")
 
 
 if __name__ == "__main__":
