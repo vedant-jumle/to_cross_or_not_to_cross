@@ -1,14 +1,13 @@
 import numpy as np
 from sklearn.metrics import precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix
 
-
 def compute_binary_metrics(y_true, y_prob, threshold=0.5):
     y_true = np.asarray(y_true).astype(int)
     y_prob = np.asarray(y_prob).astype(float)
 
     if y_true.shape[0] != y_prob.shape[0]:
         raise ValueError("y_true and y_prob must have same dimensions")
-
+    
     y_pred = (y_prob >= threshold).astype(int)
 
     metrics = {
@@ -25,7 +24,3 @@ def compute_binary_metrics(y_true, y_prob, threshold=0.5):
         metrics["auc_roc"] = roc_auc_score(y_true, y_pred)
 
     return metrics
-
-
-# Alias used by train.py
-compute_metrics = compute_binary_metrics
