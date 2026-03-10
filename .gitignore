@@ -216,3 +216,6 @@ PIE_dataset/
 *.pt
 data_cache/
 raw_data/
+
+checkpoints/
+processed/visual_cache/
