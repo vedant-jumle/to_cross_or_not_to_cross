@@ -1,0 +1,40 @@
+data:
+  pie_root: data/PIE_dataset
+  pie_regen: false
+  jsonl_paths:
+    train: processed/features_pie_train.jsonl
+    val: processed/features_pie_val.jsonl
+    test: processed/features_pie_test.jsonl
+  combined_jsonl_path: processed/features_pie_multimodal_all.jsonl
+  label_field: label_crossing
+  T: 8
+  crop_size: 64
+  cache_dir: processed/visual_cache
+
+model:
+  backbone_frozen: true
+  n_tab_features: 9
+  d_model: 512
+  nhead: 4
+  num_layers: 2
+  tab_hidden: 64
+  fusion_hidden: 128
+  dropout: 0.2
+
+training:
+  batch_size: 16
+  num_workers: 0
+  use_weighted_sampler: false
+  head_lr: 0.001
+  backbone_lr: 0.00001
+  weight_decay: 0.0001
+  phase1_epochs: 1
+  phase2_epochs: 1
+  unfreeze_from_layer: 6
+  early_stopping_patience: 3
+  device: cpu
+
+output:
+  checkpoint_dir: results/checkpoints
+  best_model_name: visual_crossing_best.pt
+  log_csv_location: results/training_log.csv
