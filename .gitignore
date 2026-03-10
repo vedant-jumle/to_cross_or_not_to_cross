@@ -218,3 +218,4 @@ data_cache/
 raw_data/
 
 checkpoints/
+processed/visual_cache/

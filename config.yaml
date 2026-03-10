@@ -22,7 +22,7 @@ model:
   dropout: 0.2
 
 training:
-  batch_size: 16
+  batch_size: 64
   num_workers: 0
   use_weighted_sampler: false
   head_lr: 0.001
@@ -32,7 +32,7 @@ training:
   phase2_epochs: 1
   unfreeze_from_layer: 6
   early_stopping_patience: 3
-  device: cpu
+  device: cuda
 
 output:
   checkpoint_dir: results/checkpoints

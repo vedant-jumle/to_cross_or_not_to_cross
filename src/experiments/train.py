@@ -7,6 +7,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import yaml
+from tqdm.auto import tqdm
 
 from ..data_pipeline.dataloader import read_jsonl
 from ..data_pipeline.pie_loader import load_pie
@@ -88,11 +89,14 @@ def build_loaders(cfg):
     train_cfg = cfg["training"]
 
     jsonl_path = _prepare_combined_jsonl(cfg)
+    print("Loading PIE database (this may take a minute)...")
     _, db = load_pie(
         data_path=data_cfg["pie_root"],
         regen=bool(data_cfg.get("pie_regen", False)),
     )
+    print(f"PIE database loaded. Sets available: {list(db.keys())}")
 
+    print("Building visual datasets...")
     train_loader, val_loader, _, stats = make_visual_loaders(
         jsonl_path=jsonl_path,
         db=db,
@@ -106,6 +110,7 @@ def build_loaders(cfg):
         cache_dir=Path(data_cfg["cache_dir"]) if data_cfg.get("cache_dir") else None,
     )
 
+    print(f"Datasets ready — train={len(train_loader.dataset)}, val={len(val_loader.dataset)} samples")
     return train_loader.dataset, val_loader.dataset, train_loader, val_loader, stats
 
 
@@ -114,7 +119,8 @@ def train_epoch(model, loader, criterion, optimizer, device):
     running_loss = 0.0
     total_samples = 0
 
-    for batch in loader:
+    pbar = tqdm(loader, desc="  train", leave=False, unit="batch")
+    for batch in pbar:
         x_tab = batch["x_tab"].to(device)
         x_vis = batch["x_vis"].to(device)
         y = batch["y"].to(device).float()
@@ -129,6 +135,8 @@ def train_epoch(model, loader, criterion, optimizer, device):
         running_loss += loss.item() * batch_size
         total_samples += batch_size
 
+        pbar.set_postfix(loss=f"{loss.item():.4f}")
+
     return running_loss / max(total_samples, 1)
 
 
@@ -140,8 +148,9 @@ def val_epoch(model, loader, criterion, device):
     all_probs = []
     all_labels = []
 
+    pbar = tqdm(loader, desc="  val  ", leave=False, unit="batch")
     with torch.no_grad():
-        for batch in loader:
+        for batch in pbar:
             x_tab = batch["x_tab"].to(device)
             x_vis = batch["x_vis"].to(device)
             y = batch["y"].to(device).float()
@@ -231,6 +240,11 @@ def main():
         dropout=float(model_cfg.get("dropout", 0.2)),
     ).to(device)
 
+    total_params = sum(p.numel() for p in model.parameters())
+    trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    print(f"Model: {total_params:,} total params, {trainable_params:,} trainable")
+    print(f"pos_weight: {pos_weight_value:.4f}")
+
     pos_weight = torch.tensor([pos_weight_value], dtype=torch.float32, device=device)
     criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
 
@@ -260,6 +274,8 @@ def main():
 
         if phase_name == "phase2":
             model.unfreeze_backbone(from_layer=int(train_cfg["unfreeze_from_layer"]))
+            trainable = sum(p.numel() for p in model.parameters() if p.requires_grad)
+            print(f"Backbone unfrozen from layer {train_cfg['unfreeze_from_layer']}. Trainable params: {trainable:,}")
 
         optimizer = _make_phase_optimizer(model, train_cfg, phase_name)
         print(f"Starting {phase_name} for {phase_epochs} epoch(s).")
